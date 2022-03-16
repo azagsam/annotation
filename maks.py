@@ -48,7 +48,7 @@ def old2new(source, output):
 
         except RuntimeError as e:
             if str(e).startswith('CUDA out of memory.'):
-                with open('failed.txt', 'a') as f:
+                with open('failed-maks.txt', 'a') as f:
                     f.write(src_file)
                     f.write('\n')
             else:
