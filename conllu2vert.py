@@ -14,23 +14,23 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
 
         # write paragraph tags
         if 'newpar id' in sentence_keys:
-            # check first
             newpar_id = int(sentence.metadata['newpar id'].split('.')[-1])
+            # catch first paragraph
             if newpar_id == 1:
                 out.write('<p>')
                 out.write('\n')
-            # check middle
+            # catch middle paragraphs
             else:
                 out.write('</p>')
                 out.write('\n')
                 out.write('<p>')
                 out.write('\n')
 
-        # serialize
+        # transform tokens back to original conllu
         output_tokens = [conllu_token for conllu_token in sentence.serialize().split('\n') if not conllu_token.startswith('#')]
-        output_tokens = ['\t'.join(conllu_token.split('\t')[1:]) for conllu_token in output_tokens]
+        output_tokens = ['\t'.join(conllu_token.split('\t')[1:]) for conllu_token in output_tokens]  # skip first token
 
-        # start writing tokens in a sentence
+        # start writing a sentence
         out.write('<s>')
         out.write('\n')
 
@@ -45,13 +45,13 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
             text = text[len(token):]  # delete raw token
             # check if token is glued or not
             if text:
-                if text[0] != ' ':
+                if text[0] != ' ':  # no empty space, token is glued to next token
                     out.write('<g/>')
                     out.write('\n')
                 else:
-                    text = text.lstrip()
+                    text = text.lstrip()  # remove empty space before a token
 
-        # Finish writing tokens in a sentence
+        # close a sentence
         out.write('</s>')
         out.write('\n')
 
