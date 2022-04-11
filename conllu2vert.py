@@ -9,7 +9,7 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
         # write new doc tag
         if 'newdoc id' in sentence_keys:
             doc_num = sentence.metadata['newdoc id']
-            out.write(f'<doc id=\"{doc_num}\">')
+            out.write(f'<text id=\"{doc_num}\">')
             out.write('\n')
 
         # write paragraph tags
@@ -58,4 +58,4 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
     # close the last paragraph and the last doc tags
     out.write('</p>')
     out.write('\n')
-    out.write('</doc>')
+    out.write('</text>')
