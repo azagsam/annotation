@@ -10,9 +10,9 @@ def reorder_tokens(output_tokens):
         reordered_output.append(reordered)
     return reordered_output
 
-
-file = 'data/maks/maks.conllu-jos_standard-slo/maks1.conllu'
-with open(file, 'r') as f, open('maks1.vert', 'w') as out:
+n = 208
+file = f'data/maks/maks.conllu-jos_standard-slo/maks{n}.conllu'
+with open(file, 'r') as f, open(f'maks{n}-v2.vert', 'w') as out:
     sentences = parse(f.read())
     for sentence in sentences:
         sentence_keys = sentence.metadata.keys()
@@ -38,7 +38,7 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
                 out.write('\n')
 
         # transform tokens back to original conllu
-        output_tokens = [conllu_token for conllu_token in sentence.serialize().split('\n') if not conllu_token.startswith('#')]
+        output_tokens = [conllu_token for conllu_token in sentence.serialize().split('\n') if conllu_token and not conllu_token.startswith('#')]  # skip metadata and empty lines
         output_tokens = reorder_tokens(output_tokens)
 
         # start writing a sentence
@@ -48,19 +48,35 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
         # extract text
         text = sentence.metadata['text']
 
-        # get glued tokens info
-        tokens = [token['form'] for token in sentence]
-        for idx, token in enumerate(tokens):
-            out.write(output_tokens[idx])
-            out.write('\n')
-            text = text[len(token):]  # delete raw token
-            # check if token is glued or not
-            if text:
-                if text[0] != ' ':  # no empty space, token is glued to next token
+        # get glued and ner tokens info
+        for output_line in output_tokens:
+            # check ner
+            token_ner = output_line.split('\t')[-2].split('=')[1]  # works with spaceafter tags as well
+            if 'O' not in token_ner:
+                if 'B' in token_ner:
+                    token_ner = token_ner.lower().split('-')[1]
+                    out.write(f'<name type=\"{token_ner}\">')
+                    out.write('\n')
+                    out.write(output_line)
+                    out.write('\n')
+                    if 'SpaceAfter=No' in output_line:
+                        out.write('<g/>')
+                        out.write('\n')
+                if 'I' in token_ner:
+                    token_ner = token_ner.lower().split('-')[1]
+                    out.write(output_line)
+                    out.write('\n')
+                    out.write('</name>')
+                    out.write('\n')
+                    if 'SpaceAfter=No' in output_line:
+                        out.write('<g/>')
+                        out.write('\n')
+            else:
+                out.write(output_line)
+                out.write('\n')
+                if 'SpaceAfter=No' in output_line:
                     out.write('<g/>')
                     out.write('\n')
-                else:
-                    text = text.lstrip()  # remove empty space before a token
 
         # close a sentence
         out.write('</s>')
