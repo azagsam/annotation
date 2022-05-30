@@ -1,5 +1,16 @@
 from conllu import parse
 
+
+def reorder_tokens(output_tokens):
+    reordered_output = []
+    for conllu_token in output_tokens:
+        tokens = conllu_token.split('\t')
+        reordered = tokens[1:] + [tokens[0]]
+        reordered = "\t".join(reordered)
+        reordered_output.append(reordered)
+    return reordered_output
+
+
 file = 'data/maks/maks.conllu-jos_standard-slo/maks1.conllu'
 with open(file, 'r') as f, open('maks1.vert', 'w') as out:
     sentences = parse(f.read())
@@ -28,7 +39,7 @@ with open(file, 'r') as f, open('maks1.vert', 'w') as out:
 
         # transform tokens back to original conllu
         output_tokens = [conllu_token for conllu_token in sentence.serialize().split('\n') if not conllu_token.startswith('#')]
-        output_tokens = ['\t'.join(conllu_token.split('\t')[1:]) for conllu_token in output_tokens]  # skip first token
+        output_tokens = reorder_tokens(output_tokens)
 
         # start writing a sentence
         out.write('<s>')
