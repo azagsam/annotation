@@ -125,7 +125,7 @@ def conllu2vert(source, target):
             # close the last paragraph and the last doc tags
             out.write('</p>')
             out.write('\n')
-            out.write('</text>')
+            out.write('</text>\n')
 
 
 def vert4list(source, target, concatenated=False):
@@ -187,7 +187,7 @@ def vert4list(source, target, concatenated=False):
 
 if __name__ == '__main__':
     conllu2vert('data/maks/maks.conllu-jos_standard-slo', 'data/maks/maks.vert')
-    vert4list('data/maks/maks.vert', 'data/maks/maks4list-single_files.vert', concatenated=True)
+    vert4list('data/maks/maks.vert', 'data/maks/maks4list_unconcatenated.vert', concatenated=False)
 
     conllu2vert('data/ucbeniki/ucbeniki.conllu-jos_standard-slo', 'data/ucbeniki/ucbeniki.vert')
-    vert4list('data/ucbeniki/ucbeniki.vert', 'data/ucbeniki/ucbeniki4list.vert', concatenated=True)
+    vert4list('data/ucbeniki/ucbeniki.vert', 'data/ucbeniki/ucbeniki4list_unconcatenated.vert', concatenated=False)
