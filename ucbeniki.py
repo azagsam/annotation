@@ -4,7 +4,8 @@ import xml.etree.ElementTree as ET
 import classla
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-
+import pandas as pd
+import shutil
 
 
 def convert2txt():
@@ -88,22 +89,41 @@ def get_ids(file):
                 out.write(f'{n}\t{n_id}\n')
 
 
+def create_cc_version(mapping, cc_ids, source, target):
+    with open(mapping, 'r') as f:
+        mapping = {}
+        for line in f:
+            n, n_id = line.strip().split('\t')
+            mapping[n_id] = n
+
+    with open(cc_ids, 'r') as f:
+        cc_ids = [line.strip() for line in f]
+
+    os.makedirs(target, exist_ok=True)
+    for file in cc_ids:
+        n = mapping[file]
+        source_path = os.path.join(source, n + '.conllu')
+        target_path = os.path.join(target, n + '.conllu')
+        shutil.copyfile(source_path, target_path)
+
+
 if __name__ == '__main__':
     # convert2txt()
 
-    # import annotator
-    classla.download('sl', type='standard_jos')
-    nlp = classla.Pipeline('sl',
-                           processors="tokenize,pos,ner,lemma,depparse",
-                           type='standard_jos',
-                           pos_use_lexicon=True,
-                           # use_gpu=False,
-                           # tokenize_batch_size=32,
-                           # ner_batch_size=32,
-                           # pos_batch_size=5000,
-                           # lemma_batch_size=50,
-                           # depparse_batch_size=5000
-                           )
-
-    annotate('data/ucbeniki/ucbeniki.txt/', 'data/ucbeniki/ucbeniki.conllu/')
-    get_ids('data/ucbeniki/ucbeniki-sl.xml')
+    # # import annotator
+    # classla.download('sl', type='standard_jos')
+    # nlp = classla.Pipeline('sl',
+    #                        processors="tokenize,pos,ner,lemma,depparse",
+    #                        type='standard_jos',
+    #                        pos_use_lexicon=True,
+    #                        # use_gpu=False,
+    #                        # tokenize_batch_size=32,
+    #                        # ner_batch_size=32,
+    #                        # pos_batch_size=5000,
+    #                        # lemma_batch_size=50,
+    #                        # depparse_batch_size=5000
+    #                        )
+    #
+    # annotate('data/ucbeniki/ucbeniki.txt/', 'data/ucbeniki/ucbeniki.conllu/')
+    # get_ids('data/ucbeniki/ucbeniki-sl.xml')
+    create_cc_version('data/ucbeniki/id_map.txt', 'data/ucbeniki/cc_list.txt', 'data/ucbeniki/ucbeniki.conllu-jos_standard-slo/', 'data/ucbeniki/ccucbeniki.conllu-jos_standard-slo/')
