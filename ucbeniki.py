@@ -1,7 +1,10 @@
 import os
+import re
 import xml.etree.ElementTree as ET
 import classla
 from tqdm import tqdm
+from bs4 import BeautifulSoup
+
 
 
 def convert2txt():
@@ -75,6 +78,16 @@ def annotate(source, output):
                     print('Other type of error')
 
 
+def get_ids(file):
+    with open(file, 'r', encoding='utf-8') as f, open('id_map.txt', 'w', encoding='utf-8') as out:
+        for line in f:
+            if line.startswith('    <bibl corresp="'):
+                line = line.strip()
+                n, n_id = re.findall(r'"(.*?)"', line)
+                n = n[1:]
+                out.write(f'{n}\t{n_id}\n')
+
+
 if __name__ == '__main__':
     # convert2txt()
 
@@ -93,3 +106,4 @@ if __name__ == '__main__':
                            )
 
     annotate('data/ucbeniki/ucbeniki.txt/', 'data/ucbeniki/ucbeniki.conllu/')
+    get_ids('data/ucbeniki/ucbeniki-sl.xml')
