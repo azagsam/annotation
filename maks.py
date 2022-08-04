@@ -178,6 +178,12 @@ def build_ccmaks_vert():
                 lines = f.readlines()
                 docs[doc_id] = lines
 
+    # remove small documents
+    with open('/home/azagar/myfiles/annotation/data/ccmaks/ccmaks_removed_docs.txt') as f:
+        small_doc_ids = [doc_id.strip() for doc_id in f]
+        for doc_id in small_doc_ids:
+            del docs[doc_id]
+
     # get metadata
     metadata = {}
     with open(maks_header, 'r') as h:
@@ -202,29 +208,42 @@ def build_ccmaks_vert():
 
 
 def build_ccmaks_conllu():
-    data = {}
+    # get sent_ids
+    terminating_sent_ids = {}
     with open('/home/azagar/myfiles/annotation/data/ccmaks/ccmaks4list_last_sentence_ids.txt', 'r') as f:
         for line in f:
             doc_id, sent_id = line.strip().split('\t')
-            data[doc_id] = sent_id
+            terminating_sent_ids[doc_id] = sent_id
 
+    # get small docs
+    with open('/home/azagar/myfiles/annotation/data/ccmaks/ccmaks_removed_docs.txt') as f:
+        small_doc_ids = [doc_id.strip() for doc_id in f]
+
+    # get gigafida docs
     gigafida_ids = [file.split('.')[0] for file in os.listdir('/home/azagar/myfiles/annotation/data/ccgigafida/ccgigafida_ccmaks4list_unconcatenated.vert')]
     ccgigafida_ccmaks = '/home/azagar/myfiles/annotation/data/ccgigafida/ccgigafida_ccmaks.conllu-jos_standard-slo'
+
+    # source and target
     source = '/home/azagar/myfiles/annotation/data/ccmaks/maks.conllu-jos_standard-slo'
     target = '/home/azagar/myfiles/annotation/data/ccmaks/ccmaks.conllu'
+
+    # start building ccmaks
     for file in os.listdir(source):
         source_path = os.path.join(source, file)
         target_path = os.path.join(target, file)
         doc_id = file.split('.')[0]
-        if doc_id in gigafida_ids:
+
+        if doc_id in gigafida_ids:  # only copy files that are in gigafida
             ccgigafida_ccmaks_path = os.path.join(ccgigafida_ccmaks, file)
             shutil.copyfile(ccgigafida_ccmaks_path, target_path)
-        else:
+        elif doc_id in small_doc_ids:  # skip small docs
+            continue
+        else:  # build small conllu doc
             with open(source_path, 'r') as f, open(target_path, 'w') as out:
                 sentences = parse(f.read())
                 for sent in sentences:
                     sent_id = sent.metadata['sent_id']
-                    if sent_id == data[doc_id]:
+                    if sent_id == terminating_sent_ids[doc_id]:
                         break
                     else:
                         out.write(sent.serialize())
@@ -273,8 +292,8 @@ if __name__ == '__main__':
     #                 '/home/azagar/myfiles/annotation/data/maks/maks4list.vert/maks4list.smaller.vert')
 
     # find small documets
-    find_small_docs('/home/azagar/myfiles/annotation/data/maks/maks.conllu-original', '/home/azagar/myfiles/annotation/data/ccmaks/ccmaks_removed_docs.txt')
+    # find_small_docs('/home/azagar/myfiles/annotation/data/maks/maks.conllu-original', '/home/azagar/myfiles/annotation/data/ccmaks/ccmaks_removed_docs.txt')
 
     # create ccmaks
     # build_ccmaks_vert()
-    # build_ccmaks_conllu()
+    build_ccmaks_conllu()
