@@ -1,6 +1,8 @@
 import os
 
 import json
+
+import conllu
 from conllu import parse
 from tqdm import tqdm
 import classla
@@ -228,6 +230,23 @@ def build_ccmaks_conllu():
                         out.write(sent.serialize())
 
 
+def find_small_docs(source_folder, target_file):
+    # find small docs
+    small_docs = []
+    for file in tqdm(os.scandir(source_folder)):
+        with open(file.path) as f:
+            data = conllu.parse(f.read())
+            if len(data) < 10:
+                small_docs.append(data[0].metadata['newdoc id'])  # first sentence include information about document id
+    sorted_docs = sorted(small_docs, key=lambda x: int(re.findall(r'\d+', x)[0]))
+
+    # write to disk
+    with open(target_file, 'w') as out:
+        for file in sorted_docs:
+            out.write(file)
+            out.write('\n')
+
+
 if __name__ == '__main__':
     # # import annotator
     # classla.download('sl', type='standard_jos')
@@ -253,6 +272,9 @@ if __name__ == '__main__':
     # reduce_doc_size('/home/azagar/myfiles/annotation/data/maks/maks4list.vert/maks4list.vert',
     #                 '/home/azagar/myfiles/annotation/data/maks/maks4list.vert/maks4list.smaller.vert')
 
+    # find small documets
+    find_small_docs('/home/azagar/myfiles/annotation/data/maks/maks.conllu-original', '/home/azagar/myfiles/annotation/data/ccmaks/ccmaks_removed_docs.txt')
+
     # create ccmaks
-    build_ccmaks_vert()
-    build_ccmaks_conllu()
+    # build_ccmaks_vert()
+    # build_ccmaks_conllu()
