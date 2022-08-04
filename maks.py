@@ -207,6 +207,7 @@ def build_ccmaks_conllu():
             data[doc_id] = sent_id
 
     gigafida_ids = [file.split('.')[0] for file in os.listdir('/home/azagar/myfiles/annotation/data/ccgigafida/ccgigafida_ccmaks4list_unconcatenated.vert')]
+    ccgigafida_ccmaks = '/home/azagar/myfiles/annotation/data/ccgigafida/ccgigafida_ccmaks.conllu-jos_standard-slo'
     source = '/home/azagar/myfiles/annotation/data/ccmaks/maks.conllu-jos_standard-slo'
     target = '/home/azagar/myfiles/annotation/data/ccmaks/ccmaks.conllu'
     for file in os.listdir(source):
@@ -214,7 +215,8 @@ def build_ccmaks_conllu():
         target_path = os.path.join(target, file)
         doc_id = file.split('.')[0]
         if doc_id in gigafida_ids:
-            shutil.copyfile(source_path, target_path)
+            ccgigafida_ccmaks_path = os.path.join(ccgigafida_ccmaks, file)
+            shutil.copyfile(ccgigafida_ccmaks_path, target_path)
         else:
             with open(source_path, 'r') as f, open(target_path, 'w') as out:
                 sentences = parse(f.read())
